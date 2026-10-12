@@ -1,4 +1,4 @@
-# End-to-End Power System Load Type Prediction Using Machine Learning
+# Power Load Prediction 
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3%2B-orange.svg)](https://scikit-learn.org/)
