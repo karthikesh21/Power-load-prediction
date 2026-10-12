@@ -268,14 +268,6 @@ Total Predicted            1,635               759                 582          
 
 ---
 
-## 10. Limitations & Future Roadmap
-
-1. **Single-Year Time Horizon**: Multi-year datasets would allow capturing year-over-year manufacturing growth and long-term climate cycles.
-2. **Telemetry Filtering**: Telemetry pre-processors should clip physically impossible power factors ($>100\%$) before model ingestion.
-3. **Sequential Autocorrelation**: Incorporating $t-1$ and $t-4$ lag features would provide localized momentum information if streaming history is available.
-
----
-
 
 
 
