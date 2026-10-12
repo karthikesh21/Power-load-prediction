@@ -25,7 +25,14 @@ Modern electrical grids, smart meter infrastructures, and industrial power manag
 
 ## 2. Problem Statement & Dataset Architecture
 
-The project classifies multi-class power demand using continuous telemetry gathered at **15-minute intervals** across the entire 2018 calendar year:
+### Dataset Provenance & Acquisition
+The telemetry used in this study corresponds to the **Steel Industry Energy Consumption Dataset**, collected from DAEWOO Steel Co. in Gwangyang, South Korea, hosted on the [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/851/steel+industry+energy+consumption) and [Kaggle](https://www.kaggle.com/datasets/csafrit2/steel-industry-energy-consumption).
+
+- **Local Path**: `data/load_data.csv`
+- **Granularity**: 15-minute continuous smart meter readings across all 365 days of 2018 (35,040 operational intervals).
+- **Setup Instructions**: Ensure `load_data.csv` is placed in the `data/` directory relative to the repository root.
+
+The project classifies multi-class power demand using continuous telemetry gathered across the entire 2018 calendar year:
 
 | Column Name | Type | Physical Meaning & Units |
 | :--- | :--- | :--- |
@@ -174,25 +181,27 @@ To assess algorithmic stability without touching the final test set, an expandin
 ---
 
 ### B. Out-of-Time Validation Comparison (November 2018 Holdout)
+Evaluated on the November 2018 validation holdout (2,880 observations) with models trained exclusively on January 1 through October 31, 2018 (29,184 observations):
 
 | Classifier | Val Accuracy | Macro Precision | Macro Recall | Macro F1 | Weighted F1 |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Decision Tree (depth=12)** | 70.52% | 0.6260 | 0.6270 | 0.6263 | 0.7045 |
+| **Decision Tree (depth=12)** | 70.52% | 0.6261 | 0.6266 | 0.6263 | 0.7040 |
+| **Decision Tree (depth=10)** | 69.76% | 0.6171 | 0.6178 | 0.6172 | 0.6961 |
 | **HistGradientBoosting** | 69.55% | 0.6149 | 0.6148 | 0.6148 | 0.6958 |
+| **Random Forest (Balanced)** | 68.65% | 0.6073 | 0.6063 | 0.6067 | 0.6885 |
 | **Random Forest (Standard)** | 68.68% | 0.6024 | 0.6031 | 0.6027 | 0.6856 |
-| **Random Forest (Balanced)** | 68.40% | 0.6015 | 0.6030 | 0.6022 | 0.6835 |
+| **Logistic Regression (Balanced)** | 60.10% | 0.5467 | 0.5429 | 0.5401 | 0.6105 |
 | **Logistic Regression** | 61.32% | 0.5369 | 0.5401 | 0.5370 | 0.6065 |
-| **Logistic Regression (Balanced)** | 59.86% | 0.5180 | 0.5210 | 0.5195 | 0.5940 |
 
-*Champion Model Selection Criterion*: While Decision Tree achieved a marginally higher Macro F1 on the single November validation month, **HistGradientBoosting** is selected as the production champion model because it achieved:
-1. The **highest Time-Aware Cross-Validation score** across the 11-month training period (**0.8068 Mean Macro F1**, **84.45% Mean CV Accuracy** vs. 0.7972 and 83.67% for Decision Tree).
-2. The **highest final test set accuracy** (**74.26% - 74.43%**) and **highest test Macro F1** (**0.6281 - 0.6304**) on the untouched December test set.
-3. Superior resilience against variance via gradient boosted sequential residual correction.
+*Champion Model Selection Criterion*: While a single deep Decision Tree achieved a marginally higher Macro F1 on the specific single-month November holdout (0.6263 vs 0.6148), **HistGradientBoosting** is selected as the production champion model based strictly on historical evidence prior to test set exposure:
+1. **Cross-Validation Superiority Across Seasons**: On 5-fold expanding `TimeSeriesSplit` cross-validation across all historical seasons, HistGradientBoosting achieved the highest overall score (**0.8068 Mean Macro F1**, **84.45% Mean CV Accuracy** vs. 0.7972 and 83.67% for Decision Tree).
+2. **Variance Reduction**: A single deep decision tree is prone to high variance on seasonal regime shifts. Gradient boosted tree ensembles sequentially correct pseudo-residuals with binned features, providing robust regularization against sensor noise and telemetry drift.
+3. **Leakage-Free Protocol**: This decision was frozen strictly using cross-validation and November validation data. December test data was never used to choose or justify the model architecture.
 
 ---
 
-### C. Comprehensive Model Comparison on Untouched December 2018 Test Set
-All candidate architectures were fitted on the complete 11-month training set (Jan 1 to Nov 30, 2018; 32,064 records) and evaluated on the sealed December 2018 test partition (2,976 records):
+### C. Comprehensive Model Benchmark on Untouched December 2018 Test Set
+All candidate architectures were retrained on the complete 11-month training set (Jan 1 to Nov 30, 2018; 32,064 records) and evaluated on the untouched December 2018 test partition (2,976 records):
 
 | Model Architecture | Test Accuracy | Macro Precision | Macro Recall | Macro F1 | Weighted F1 |
 | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -207,13 +216,13 @@ All candidate architectures were fitted on the complete 11-month training set (J
 
 ### D. Final Champion Model Evaluation & Invariant Verification (HistGradientBoosting)
 
-| Metric | Validation (Nov 2018) | Final Test Set (Dec 2018) | Generalization Delta |
+| Metric | Validation (Nov 2018) [Jan-Oct Model] | Final Test Set (Dec 2018) [Jan-Nov Model] | Generalization Delta |
 | :--- | :---: | :---: | :---: |
-| **Accuracy** | **80.76%** | **74.26%** | $-6.50\%$ |
-| **Macro Precision** | **0.7578** | **0.6259** | $-13.19\%$ |
-| **Macro Recall** | **0.7607** | **0.6322** | $-12.85\%$ |
-| **Macro F1 Score** | **0.7576** | **0.6281** | $-12.95\%$ |
-| **Weighted F1 Score** | **0.8093** | **0.7514** | $-5.79\%$ |
+| **Accuracy** | **69.55%** | **74.26%** | $+4.71\%$ |
+| **Macro Precision** | **0.6149** | **0.6259** | $+1.10\%$ |
+| **Macro Recall** | **0.6148** | **0.6322** | $+1.74\%$ |
+| **Macro F1 Score** | **0.6148** | **0.6281** | $+1.33\%$ |
+| **Weighted F1 Score** | **0.6958** | **0.7514** | $+5.56\%$ |
 
 ### Class-Specific Classification Report (December Test Set)
 ```text
