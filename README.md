@@ -82,7 +82,9 @@ power-load-prediction/
 │
 ├── src/
 │   └── predict.py                     # Standalone CLI & programmatic inference module
-│
+|
+│──  Power_Load_Prediction_Report.docx
+|
 ├── .gitignore                         # Ignore caches, virtual environments & checkpoints
 ├── README.md                          # Comprehensive project documentation
 └── requirements.txt                   # Verified package dependencies
