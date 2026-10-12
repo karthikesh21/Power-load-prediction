@@ -67,11 +67,7 @@ The project classifies multi-class power demand using continuous telemetry gathe
 ```text
 power-load-prediction/
 │
-├── data/
-│   └── load_data.csv                  # Raw 15-minute electrical telemetry (2018)
-│
-├── notebooks/
-│   └── power_load_prediction.ipynb    # Comprehensive, executed teaching notebook
+├── power_load_prediction.ipynb    # Comprehensive, executed teaching notebook
 │
 ├── models/
 │   ├── .gitkeep
