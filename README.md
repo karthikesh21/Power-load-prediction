@@ -270,36 +270,6 @@ Total Predicted            1,635               759                 582          
 
 ---
 
-## 11. Git & GitHub Submission Guide
 
-```bash
-# 1. Initialize Git repository
-git init
 
-# 2. Add all project files
-git add .
 
-# 3. Commit the project
-git commit -m "feat: complete end-to-end power load prediction assignment"
-
-# 4. Link your remote GitHub repository and push
-git remote add origin https://github.com/karthikesh21/Power-load-prediction.git
-git branch -M main
-git push -u origin main
-```
-
----
-
-## 12. Technical Interview Questions & Model Answers
-
-### Q1: Why is random train-test splitting inappropriate for this dataset?
-> **Answer**: Contiguous 15-minute sensor observations possess strong temporal autocorrelation. If consecutive observations (e.g., 10:00 and 10:30) are placed in training while 10:15 is in testing, the model merely interpolates between known adjacent measurements, giving an inflated accuracy score that collapses in production. Chronologically holding out the final month (December) ensures true out-of-time generalization assessment.
-
-### Q2: Why did you prioritize Macro F1 score over standard Accuracy?
-> **Answer**: `Light_Load` accounts for over 51% of the dataset. A trivial model predicting only `Light_Load` would achieve >51% accuracy while failing completely at identifying critical peak demand events. Macro F1 averages F1 across all three classes equally, ensuring minority classes are fairly evaluated.
-
-### Q3: What did your audit of the `NSM` feature reveal?
-> **Answer**: The raw `NSM` (Number of Seconds from Midnight) column had corrupted values in ~9.9% of rows, with values drifting up to 248,821 seconds (impossible in an 86,400-second day). By re-computing seconds from midnight directly from the verified `Date_Time` timestamp, we eliminated sensor drift and ensured reliable temporal features.
-
-### Q4: Why did Decision Trees and Gradient Boosting outperform Logistic Regression?
-> **Answer**: Electricity load dynamics are governed by non-linear interactions between time-of-day and active power (e.g., a 40 kWh load at 3 AM on Sunday represents an anomaly, whereas at 2 PM on a Tuesday it represents normal medium load). Tree algorithms naturally discover hierarchical interaction splits without requiring manual polynomial feature transformations.
